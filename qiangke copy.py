@@ -10,6 +10,9 @@ cookies = {
     'JSESSIONID': 'B3F1543888FF8E9F91E213F9065A58F9'
 }
 
+ELECTTURNID='A9E7F742-68FC-4E69-BBE3-E7B599C8FBE9'
+LESSONTASKS='44733E9B-BCDB-4027-930C-9042C752E08E'
+
 headers = {
     'Connection': 'keep-alive',
     'sec-ch-ua': '^\\^Chromium^\\^;v=^\\^92^\\^, ^\\^',
@@ -50,12 +53,14 @@ def sendreq(data):
         print(ret.decode(encoding='utf-8',errors='ignore').strip())
         reqall+=1
 
-mydata='jsonString=%7B%22electTurnId%22%3A%2223E9FE37-6EDB-4C22-ADA8-BF397210419E%22%2C%22autoElect%22%3Atrue%2C%22lessonTasks%22%3A%5B%22C9A064EB-B610-0001-62FD-1210D45066F0%22%5D%7D'
+mydata=f'jsonString=%7B%22electTurnId%22%3A%22{ELECTTURNID}%22%2C%22autoElect%22%3Atrue%2C%22lessonTasks%22%3A%5B%22{LESSONTASKS}%22%5D%7D'
 #sendreq(mydata)
 stop=0
 reqall=0
-Nu=20
+Nu=2
 s=[threading.Thread(target=sendreq,args=(mydata,)) for i in range(Nu)]
 for i in range(Nu):
     s[i].start()
+for i in range(Nu):
+    s[i].join()
 #s[0].start()
