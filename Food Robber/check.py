@@ -56,12 +56,11 @@ class robFood:
             thread_box.append(threading.Thread(target=self.getlist, args=()))
         for i in thread_box:
             i.start()
-        for i in thread_box:
-            i.join()
+        # for i in thread_box:
+        #     i.join()
         # First try preferred time
-        if len(self.ans)==0:
-            print('Please check cookie')
-            return
+        while len(self.ans)==0:
+            pass
         print('Got List')
         arth_box=[]
         for i in self.ans:
@@ -72,7 +71,7 @@ class robFood:
             if i[0] != self.prefer_time:
                 arth_box.append(threading.Thread(target=self.save, args=(i[1],)))
         arth_box[0].start()
-        sleep(0.5)
+        sleep(0.1)
         if self.success:
             print('Done')
             return
@@ -83,6 +82,6 @@ class robFood:
         print('Done')
 
 if __name__=="__main__":
-    # robber=robFood('A2131EF83AE59DE8CC93A9DD6E4CAB75','ffffffff097e1f5545525d5f4f58455e445a4a4229a0','haircut','bus','TWO','2022-04-13','16:00')
-    robber=robFood('2FAF5B88AF35943962AECF48336FF18A','ffffffff097e1f5245525d5f4f58455e445a4a4229a0','market','market','YLYLS','2022-04-14','14:00')
+    robber=robFood('C2A39BD865979439E998FE93F08ECCAD','ffffffff097e1f5245525d5f4f58455e445a4a4229a0','haircut','bus','TWO','2022-04-13','18:30')
+    # robber=robFood('2FAF5B88AF35943962AECF48336FF18A','ffffffff097e1f5245525d5f4f58455e445a4a4229a0','market','market','YLYLS','2022-04-14','15:30')
     robber.run()
