@@ -12,7 +12,7 @@ import json
 
 
 class JIEelector:
-    def __init__(self, jsessionid: str) -> None:
+    def __init__(self, jsessionid: str, enable_istothetime : bool = False) -> None:
         '''
         Set headers and cookies by jsessionid
         '''
@@ -36,6 +36,11 @@ class JIEelector:
             'Referer': 'https://coursesel.umji.sjtu.edu.cn/welcome.action',
             'Accept-Language': 'zh-CN,zh;q=0.9',
         }
+        if enable_istothetime:
+            self.enable_istothetime = "true"
+        else:
+            self.enable_istothetime = "false"
+            
 
     def get_elect_turns(self):
         '''
@@ -61,7 +66,7 @@ class JIEelector:
         from prettytable import PrettyTable
         import requests
 
-        response = json.loads(requests.get(f'https://coursesel.umji.sjtu.edu.cn/tpm/findLessonTasks_ElectTurn.action?jsonString=%7B%22isToTheTime%22%3Afalse%2C%22electTurnId%22%3A%22{electurnid}%22%2C%22loadCourseGroup%22%3Atrue%2C%22loadElectTurn%22%3Atrue%2C%22loadCourseType%22%3Atrue%2C%22loadCourseTypeCredit%22%3Atrue%2C%22loadElectTurnResult%22%3Atrue%2C%22loadStudentLessonTask%22%3Atrue%2C%22loadPrerequisiteCourse%22%3Atrue%2C%22lessonCalendarWeek%22%3Afalse%2C%22loadLessonCalendarConflict%22%3Afalse%2C%22loadTermCredit%22%3Atrue%2C%22loadLessonTask%22%3Atrue%2C%22loadDropApprove%22%3Atrue%2C%22loadElectApprove%22%3Atrue%7D', headers=self.headers, cookies=self.cookies).text)
+        response = json.loads(requests.get(f'https://coursesel.umji.sjtu.edu.cn/tpm/findLessonTasks_ElectTurn.action?jsonString=%7B%22isToTheTime%22%3A{self.enable_istothetime}%2C%22electTurnId%22%3A%22{electurnid}%22%2C%22loadCourseGroup%22%3Atrue%2C%22loadElectTurn%22%3Atrue%2C%22loadCourseType%22%3Atrue%2C%22loadCourseTypeCredit%22%3Atrue%2C%22loadElectTurnResult%22%3Atrue%2C%22loadStudentLessonTask%22%3Atrue%2C%22loadPrerequisiteCourse%22%3Atrue%2C%22lessonCalendarWeek%22%3Afalse%2C%22loadLessonCalendarConflict%22%3Afalse%2C%22loadTermCredit%22%3Atrue%2C%22loadLessonTask%22%3Atrue%2C%22loadDropApprove%22%3Atrue%2C%22loadElectApprove%22%3Atrue%7D', headers=self.headers, cookies=self.cookies).text)
 
         mdata = response['data']['lessonTasks']
         table = PrettyTable(['ID', '课程名称', '授课老师', '课程代码', '已报名人数'])

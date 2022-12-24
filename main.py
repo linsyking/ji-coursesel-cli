@@ -23,16 +23,19 @@ def get_jsession():
         return
     return res
 
+
 @app.command()
-def init():
+def init(use_realtime: bool = typer.Option(
+        False, "--realtime", "-r", help="Use realtime request instead of preview request.")):
     """
     Initialize course elector
     """
     js = get_jsession()
     from Elector import JIEelector
-    elector = JIEelector(js)
+    elector = JIEelector(js, use_realtime)
     elector.run()
     print("Done. Please use command 'elect' to start electing.")
+
 
 @app.command()
 def refresh():
@@ -54,13 +57,14 @@ def refresh():
 
 @app.command()
 def elect(jsessionID: str = typer.Option(None, "--jsessionID", "-j", help="Your JSESSIONID"),
-    electTurnID: str = typer.Option(None, "--electTurnID", "-e"),
+          electTurnID: str = typer.Option(None, "--electTurnID", "-e"),
           ElectTurnLessonTaskID: str = typer.Option(None, "--electTurnLessonTaskID", "-l",
                                                     help="List of all courses you want to select, separated by comma (,)."),
           thread_number: int = typer.Option(10, "--thread", "-x",
                                             help="Number of threads to use for each course."),
           max_try: int = typer.Option(None, "--max-try", "-m",
-                                      help="Maximum number of requests to send for each course. If not set, will try forever.")):
+                                      help="Maximum number of requests to send for each course. If not set, will try forever.")
+          ):
     """
     Elect courses
     """
