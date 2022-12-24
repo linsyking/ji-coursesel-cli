@@ -4,15 +4,15 @@ import time
 import threading
 
 
-class electsingle:
-    def __init__(self, JSESSIONID, TURNID, COURSEID: list, thread_number=10) -> None:
+class ElectSingle:
+    def __init__(self, JSESSIONID, TURNID, COURSEID: list, thread_number=10, max_try=None) -> None:
         '''
         COURSEID: list,所有课程
         thread_number: 对每个课程分配的线程个数
         '''
         self.ELECTTURNID = TURNID
         self.COURSEID = COURSEID
-        self.trynum = 0
+        self.trymax = max_try
         self.stop = 0
         self.reqall = 0
         self.Nu = thread_number
@@ -35,13 +35,18 @@ class electsingle:
             'Referer': 'https://coursesel.umji.sjtu.edu.cn/welcome.action',
             'Accept-Language': 'zh-CN,zh;q=0.9',
         }
+        print(f"init: electturnid: {self.ELECTTURNID}, courses: {self.COURSEID}")
+        print(f"using {thread_number} threads for each course")
 
     def sendreq(self, data):
         while(1):
             if(self.stop):
-                print(self.reqall)
+                # print(self.reqall)
                 return
             ts = time.time()
+            if self.trymax and self.reqall >= self.trymax:
+                self.stop = 1
+                # print(ts-self.start_time)
             realtime = int(round(ts * 1000))
             params = (
                 ('_t', realtime),
@@ -53,7 +58,7 @@ class electsingle:
                 print("error")
                 exit()
             if(str(ret).find("false") == -1):
-                print("选课成功!")
+                print("success, congrats")
                 self.stop = 1
                 return
             print(ret.strip())
@@ -67,18 +72,19 @@ class electsingle:
                 s.append(threading.Thread(target=self.sendreq, args=(data,)))
         for i in range(len(s)):
             s[i].start()
+        self.start_time = time.time()
         for i in range(len(s)):
             s[i].join()
-        print("运行结束")
+        print("end")
 
 
 if __name__ == '__main__':
-    mel = electsingle('3BABB2596C520A126609B45D7C52460A',
-                      'D83A10A9-0913-4061-AF5C-48EF250B41FA', ['CCE0615B-DEBB-4965-A2A3-751843F58932'], 1)
+    mel = ElectSingle('822F840D86C7C8BAC7D03DB88CB05571',
+                      'D953358F-8716-46EA-A3F7-A7D7AACA1057', ['404FC4DB-2004-4CE9-8D1E-5AF0534FCB53'], 5)
     '''
     示例说明：第一个参数是Jsesseion id.注意要运行脚本前十分钟内获取最好，以免运行时失效。
     第二个参数是Electurn ID
-    第三个参数是Course LessonTaskID的List
+    第三个参数是Course ElectTurnLessonTaskID的List
     第四个参数可选，表示对每个课程分配多少的线程
     '''
     mel.run()
