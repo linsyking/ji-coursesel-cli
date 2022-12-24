@@ -1,4 +1,4 @@
-# JI-Coursesel
+# JI-Coursesel CLI
 
 [![asciicast](https://asciinema.org/a/0M3EJMGSq8Qrc4M7izJjrPfhZ.svg)](https://asciinema.org/a/0M3EJMGSq8Qrc4M7izJjrPfhZ)
 
