@@ -4,10 +4,10 @@
 
 ## Pre-requirements
 
-Python >=3.9
+Python >=3.7
 
 ```bash
-pip install -r requirements.txt
+pip install ji-coursesel
 ```
 
 ## Getting started
@@ -15,30 +15,30 @@ pip install -r requirements.txt
 Show the help manual:
 
 ```bash
-python main.py
+ji-coursesel
 ```
 
 Initialize:
 
 ```bash
-python main.py init
+ji-coursesel init
 ```
 
 Refresh JSESSIONID:
 
 ```bash
-python main.py refresh
+ji-coursesel refresh
 ```
 
 Elect:
 
 ```bash
-python main.py elect
+ji-coursesel elect
 ```
 
 Specify the threads number for each course (recommend to use 1 when testing):
 
 ```bash
-python main.py elect -x 1
+ji-coursesel elect -x 1
 ```
 
