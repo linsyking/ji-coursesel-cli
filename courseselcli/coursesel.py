@@ -1,4 +1,4 @@
-from login import JaccountCLILogin
+from courseselcli.login import JaccountCLILogin
 
 
 async def get_coursesel_jsid(enable_mask: bool):

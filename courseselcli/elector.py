@@ -49,7 +49,6 @@ class JIEelector:
         import requests
         response = requests.get('https://coursesel.umji.sjtu.edu.cn/tpm/findStudentElectTurns_ElectTurn.action',
                                headers=self.headers, cookies=self.cookies)
-
         all_turns = json.loads(response.text)
 
         if len(all_turns) == 0:

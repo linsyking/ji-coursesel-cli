@@ -1,3 +1,0 @@
-prettytable
-jaccount_cli
-typer

@@ -13,7 +13,7 @@ app = typer.Typer(add_completion=False)
 
 
 def get_jsession():
-    import coursesel
+    import courseselcli.coursesel as coursesel
     import asyncio
     print("Getting your JSESSIONID...")
     try:
@@ -31,7 +31,7 @@ def init(use_realtime: bool = typer.Option(
     Initialize course elector
     """
     js = get_jsession()
-    from Elector import JIEelector
+    from courseselcli.elector import JIEelector
     elector = JIEelector(js, use_realtime)
     elector.run()
     print("Done. Please use command 'elect' to start electing.")
@@ -89,7 +89,7 @@ def elect(jsessionID: str = typer.Option(None, "--jsessionID", "-j", help="Your 
         print("Please specify ElectTurnLessonTaskID")
         return
     JSESSIONID = jsessionID
-    from SingleWorker import ElectSingle
+    from courseselcli.single import ElectSingle
 
     my_elector = ElectSingle(JSESSIONID, electTurnID, ElectTurnLessonTaskID.split(
         ','), thread_number, max_try)
