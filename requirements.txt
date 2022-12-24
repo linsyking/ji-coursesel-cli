@@ -1,0 +1,5 @@
+prettytable
+ji-auth>=0.0.7
+jaccount_cli
+getpass
+typer
