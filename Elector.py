@@ -132,7 +132,3 @@ class JIEelector:
         turn = self.get_elect_turns()
 
         self.get_all_courses(turn)
-
-if __name__ == "__main__":
-    s = JIEelector("821168F4DB54C09F7BF715B3201ED30D")
-    s.get_all_courses(s.get_elect_turns())

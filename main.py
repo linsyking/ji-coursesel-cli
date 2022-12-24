@@ -13,7 +13,7 @@ app = typer.Typer(add_completion=False)
 
 
 def get_jsession():
-    from ji_auth import coursesel
+    import coursesel
     import asyncio
     print("Getting your JSESSIONID...")
     try:
