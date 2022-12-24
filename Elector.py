@@ -47,12 +47,12 @@ class JIEelector:
 
         all_turns = json.loads(response.text)
 
-        # if len(all_turns) == 0:
-        #     print('No elect turn found.')
-        #     exit(0)
-
-        # Select turn
-        return "D953358F-8716-46EA-A3F7-A7D7AACA1057"
+        if len(all_turns) == 0:
+            print('No elect turn found.')
+            exit(0)
+        turn = all_turns[0]
+        print(f"选课：{turn['electTurnName']}，模式：{turn['electModeName']}，开始时间：{turn['beginTime']}")
+        return turn["electTurnId"]
 
     def get_all_courses(self, electurnid: str):
         '''
@@ -61,14 +61,7 @@ class JIEelector:
         from prettytable import PrettyTable
         import requests
 
-        # TODO: use real API
-
-        # resonse = requests.get(f'https://coursesel.umji.sjtu.edu.cn/tpm/findLessonTasks_ElectTurn.action?jsonString=%7B%22isToTheTime%22%3Atrue%2C%22electTurnId%22%3A%22{electurnid}%22%2C%22loadCourseGroup%22%3Atrue%2C%22loadElectTurn%22%3Atrue%2C%22loadCourseType%22%3Atrue%2C%22loadCourseTypeCredit%22%3Atrue%2C%22loadElectTurnResult%22%3Atrue%2C%22loadStudentLessonTask%22%3Atrue%2C%22loadPrerequisiteCourse%22%3Atrue%2C%22lessonCalendarWeek%22%3Afalse%2C%22loadLessonCalendarConflict%22%3Afalse%2C%22loadTermCredit%22%3Atrue%2C%22loadLessonTask%22%3Atrue%2C%22loadDropApprove%22%3Atrue%2C%22loadElectApprove%22%3Atrue%7D', headers=self.headers, cookies=self.cookies).text
-
-        # Here I use a fake API
-
-        with open('./FA2022/data.json', "r") as f:
-            response = json.load(f)
+        response = json.loads(requests.get(f'https://coursesel.umji.sjtu.edu.cn/tpm/findLessonTasks_ElectTurn.action?jsonString=%7B%22isToTheTime%22%3Afalse%2C%22electTurnId%22%3A%22{electurnid}%22%2C%22loadCourseGroup%22%3Atrue%2C%22loadElectTurn%22%3Atrue%2C%22loadCourseType%22%3Atrue%2C%22loadCourseTypeCredit%22%3Atrue%2C%22loadElectTurnResult%22%3Atrue%2C%22loadStudentLessonTask%22%3Atrue%2C%22loadPrerequisiteCourse%22%3Atrue%2C%22lessonCalendarWeek%22%3Afalse%2C%22loadLessonCalendarConflict%22%3Afalse%2C%22loadTermCredit%22%3Atrue%2C%22loadLessonTask%22%3Atrue%2C%22loadDropApprove%22%3Atrue%2C%22loadElectApprove%22%3Atrue%7D', headers=self.headers, cookies=self.cookies).text)
 
         mdata = response['data']['lessonTasks']
         table = PrettyTable(['ID', '课程名称', '授课老师', '课程代码', '已报名人数'])
@@ -141,5 +134,5 @@ class JIEelector:
         self.get_all_courses(turn)
 
 if __name__ == "__main__":
-    s = JIEelector("88475F53AD452870BAA6B9A13CDE8FD8")
-    s.get_elect_turns()
+    s = JIEelector("821168F4DB54C09F7BF715B3201ED30D")
+    s.get_all_courses(s.get_elect_turns())
