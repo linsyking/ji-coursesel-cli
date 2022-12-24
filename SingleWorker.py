@@ -7,8 +7,9 @@ import threading
 class ElectSingle:
     def __init__(self, JSESSIONID, TURNID, COURSEID: list, thread_number=10, max_try=None) -> None:
         '''
-        COURSEID: list,所有课程
-        thread_number: 对每个课程分配的线程个数
+        COURSEID: list of the ElectTurnLessonTaskID of courses
+        thread_number: thred number for each course
+        max_try: max try times
         '''
         self.ELECTTURNID = TURNID
         self.COURSEID = COURSEID
@@ -76,15 +77,3 @@ class ElectSingle:
         for i in range(len(s)):
             s[i].join()
         print("end")
-
-
-if __name__ == '__main__':
-    mel = ElectSingle('822F840D86C7C8BAC7D03DB88CB05571',
-                      'D953358F-8716-46EA-A3F7-A7D7AACA1057', ['404FC4DB-2004-4CE9-8D1E-5AF0534FCB53'], 5)
-    '''
-    示例说明：第一个参数是Jsesseion id.注意要运行脚本前十分钟内获取最好，以免运行时失效。
-    第二个参数是Electurn ID
-    第三个参数是Course ElectTurnLessonTaskID的List
-    第四个参数可选，表示对每个课程分配多少的线程
-    '''
-    mel.run()

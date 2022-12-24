@@ -56,7 +56,7 @@ class JIEelector:
             print('No elect turn found.')
             exit(0)
         turn = all_turns[0]
-        print(f"选课：{turn['electTurnName']}，模式：{turn['electModeName']}，开始时间：{turn['beginTime']}")
+        print(f"ElectTurn: {turn['electTurnName']}, Mode: {turn['electModeName']}, Start Time: {turn['beginTime']}")
         return turn["electTurnId"]
 
     def get_all_courses(self, electurnid: str):
@@ -69,7 +69,7 @@ class JIEelector:
         response = json.loads(requests.get(f'https://coursesel.umji.sjtu.edu.cn/tpm/findLessonTasks_ElectTurn.action?jsonString=%7B%22isToTheTime%22%3A{self.enable_istothetime}%2C%22electTurnId%22%3A%22{electurnid}%22%2C%22loadCourseGroup%22%3Atrue%2C%22loadElectTurn%22%3Atrue%2C%22loadCourseType%22%3Atrue%2C%22loadCourseTypeCredit%22%3Atrue%2C%22loadElectTurnResult%22%3Atrue%2C%22loadStudentLessonTask%22%3Atrue%2C%22loadPrerequisiteCourse%22%3Atrue%2C%22lessonCalendarWeek%22%3Afalse%2C%22loadLessonCalendarConflict%22%3Afalse%2C%22loadTermCredit%22%3Atrue%2C%22loadLessonTask%22%3Atrue%2C%22loadDropApprove%22%3Atrue%2C%22loadElectApprove%22%3Atrue%7D', headers=self.headers, cookies=self.cookies).text)
 
         mdata = response['data']['lessonTasks']
-        table = PrettyTable(['ID', '课程名称', '授课老师', '课程代码', '已报名人数'])
+        table = PrettyTable(['ID', 'Name', 'Teacher', 'Code', 'Registration Satus'])
 
         for id, lesson in enumerate(mdata):
             cname = lesson['courseName']
@@ -84,16 +84,16 @@ class JIEelector:
             table.add_row([id, f'{detail}/{cname}', teacher,
                           lclasscode, f"{hasstu}/{maxnum}"])
         print(table)
-        selected = input('请输入要选择的课程ID，用逗号隔开: ').split(',')
+        selected = input('Please enter the course ID(s) you want to elect, separated by commas:').split(',')
         table.clear_rows()
 
         if len(selected) == 0:
-            print('未选择任何课程')
+            print('No course selected')
             return
 
         # Confirm
 
-        print('您选择了以下课程：')
+        print('You selected:')
 
         selected_courses = [mdata[int(i)] for i in selected]
 
@@ -106,12 +106,12 @@ class JIEelector:
             if 'lessonTaskTeam' in lesson:
                 teacher = lesson['lessonTaskTeam']
             else:
-                teacher = '未知'
+                teacher = 'Unknown'
             if lesson['electTurnId'] != electurnid:
-                print('选课轮次不符合')
+                print('ElecturnID not corrected:', cname)
                 return
             if 'electTurnLessonTaskId' not in lesson:
-                print('该课程不可选')
+                print('This course is not available:', cname)
                 return
             table.add_row([id, f'{detail}/{cname}', teacher,
                           lclasscode, f"{hasstu}/{maxnum}"])
@@ -128,7 +128,7 @@ class JIEelector:
         with open('.coursesel', 'w') as f:
             json.dump(obj, f, ensure_ascii=False, indent=4)
         
-        print('已保存到 .coursesel 文件')
+        print('Saved to .coursesel.')
 
     def run(self):
         '''
