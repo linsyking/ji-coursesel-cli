@@ -12,48 +12,80 @@ import json
 app = typer.Typer(add_completion=False)
 
 
-def get_jsession():
+def get_jsession(force_update=False):
+    import os.path
+    obj = {}
+    if os.path.exists("coursesel.json"):
+        with open("coursesel.json", "r") as f:
+            obj = json.load(f)
+        if "jsessionID" in obj and not force_update:
+            return obj["jsessionID"]
     import courseselcli.coursesel as coursesel
     import asyncio
     print("Getting your JSESSIONID...")
     try:
         res = asyncio.run(coursesel.get_coursesel_jsid(True))
     except Exception:
-        print("Failed to get JSESSIONID, please try again.")
-        return
+        raise RuntimeError("Failed to get JSESSIONID")
+    obj["jsessionID"] = res
+    with open("coursesel.json", "w") as f:
+        f.write(json.dumps(obj, indent=4, ensure_ascii=False))
     return res
 
+def get_conf():
+    import os.path
+    obj = {}
+    if os.path.exists("coursesel.json"):
+        with open("coursesel.json", "r") as f:
+            obj = json.load(f)
+        return obj
+    else:
+        get_jsession()
+        return get_conf()
 
 @app.command()
-def init(use_realtime: bool = typer.Option(
+def update(use_realtime: bool = typer.Option(
         False, "--realtime", "-r", help="Use realtime request instead of preview request.")):
     """
-    Initialize course elector
+    Update courses from server.
     """
     js = get_jsession()
     from courseselcli.elector import JIEelector
     elector = JIEelector(js, use_realtime)
-    elector.run()
-    print("Done. Please use command 'elect' to start electing.")
-
+    try:
+        elector.run_save()
+    except:
+        get_jsession(True)
+        update(use_realtime)
 
 @app.command()
-def refresh():
+def autoadd(use_realtime: bool = typer.Option(
+        False, "--realtime", "-r", help="Use realtime request instead of preview request.")):
     """
-    Refresh JSESSIONID in current configuration file
+    Auto add courses.
     """
-    import os
-    if not os.path.exists('.coursesel'):
-        print('Not found .coursesel file. Please run init first')
-        return
     js = get_jsession()
-    with open('.coursesel', 'r') as f:
-        config = json.load(f)
-    config['jsessionID'] = js
-    with open('.coursesel', 'w') as f:
-        json.dump(config, f, indent=4)
-    print("Done. Please use command 'elect' to start electing.")
+    from courseselcli.elector import JIEelector
+    elector = JIEelector(js, use_realtime)
+    try:
+        elector.run()
+    except:
+        get_jsession(True)
+        autoadd(use_realtime)
 
+@app.command()
+def search(keyword: str = typer.Argument(..., help="Keyword to search.")):
+    """
+    Pull electurns and courses from server.
+    """
+    from courseselcli.elector import JIEelector
+    js = get_jsession()
+    elector = JIEelector(js)
+    try:
+        elector.search_courses(keyword)
+    except:
+        get_jsession(True)
+        search(keyword)
 
 @app.command()
 def elect(jsessionID: str = typer.Option(None, "--jsessionID", "-j", help="Your JSESSIONID"),
@@ -66,19 +98,22 @@ def elect(jsessionID: str = typer.Option(None, "--jsessionID", "-j", help="Your 
                                       help="Maximum number of requests to send for each course. If not set, will try forever.")
           ):
     """
-    Elect courses
+    Elect courses.
     """
     import os
-    if os.path.exists('.coursesel'):
+    if os.path.exists('coursesel.json'):
         # Use this file to initialize
-        with open('.coursesel', 'r') as f:
+        with open('coursesel.json', 'r') as f:
             config = json.load(f)
-        jsessionID = config['jsessionID']
-        electTurnID = config['electTurnId']
-        courses_eid = []
-        for l in config['courses']:
-            courses_eid.append(l['electTurnLessonTaskId'])
-        ElectTurnLessonTaskID = ','.join(courses_eid)
+        try:
+            jsessionID = config['jsessionID']
+            electTurnID = config['electTurnId']
+            courses_eid = []
+            for l in config['courses']:
+                courses_eid.append(l['electTurnLessonTaskId'])
+            ElectTurnLessonTaskID = ','.join(courses_eid)
+        except:
+            raise RuntimeError("Invalid coursesel.json file, please update first.")
     if jsessionID is None:
         print("Please specify JSESSIONID")
         return

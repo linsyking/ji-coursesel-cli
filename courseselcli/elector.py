@@ -12,7 +12,7 @@ import json
 
 
 class JIEelector:
-    def __init__(self, jsessionid: str, enable_istothetime : bool = False) -> None:
+    def __init__(self, jsessionid: str, enable_istothetime: bool = False) -> None:
         '''
         Set headers and cookies by jsessionid
         '''
@@ -40,7 +40,6 @@ class JIEelector:
             self.enable_istothetime = "true"
         else:
             self.enable_istothetime = "false"
-            
 
     def get_elect_turns(self):
         '''
@@ -48,15 +47,27 @@ class JIEelector:
         '''
         import requests
         response = requests.get('https://coursesel.umji.sjtu.edu.cn/tpm/findStudentElectTurns_ElectTurn.action',
-                               headers=self.headers, cookies=self.cookies)
+                                headers=self.headers, cookies=self.cookies)
         all_turns = json.loads(response.text)
 
         if len(all_turns) == 0:
             print('No elect turn found.')
-            exit(0)
+            return None
         turn = all_turns[0]
-        print(f"ElectTurn: {turn['electTurnName']}, Mode: {turn['electModeName']}, Start Time: {turn['beginTime']}")
+        print(
+            f"ElectTurn: {turn['electTurnName']}, Mode: {turn['electModeName']}, Start Time: {turn['beginTime']}")
         return turn["electTurnId"]
+
+    def search_courses(self, keyword: str):
+        import requests
+        response = json.loads(requests.get(
+            f'https://coursesel.umji.sjtu.edu.cn/jdji/tpm/findOwnCollegeCourse_JiCourse.action?jsonString=%7B%22courseSearch%22%3A%22{keyword}%22%7D', headers=self.headers, cookies=self.cookies).text)
+
+        mdata = response['data']
+
+        for i in mdata:
+            print(f"{i['courseCode']}: {i['courseNameEn']}")
+            print(f"\t{i['courseName']}")
 
     def get_all_courses(self, electurnid: str):
         '''
@@ -64,11 +75,16 @@ class JIEelector:
         '''
         from prettytable import PrettyTable
         import requests
+        import os.path
 
-        response = json.loads(requests.get(f'https://coursesel.umji.sjtu.edu.cn/tpm/findLessonTasks_ElectTurn.action?jsonString=%7B%22isToTheTime%22%3A{self.enable_istothetime}%2C%22electTurnId%22%3A%22{electurnid}%22%2C%22loadCourseGroup%22%3Atrue%2C%22loadElectTurn%22%3Atrue%2C%22loadCourseType%22%3Atrue%2C%22loadCourseTypeCredit%22%3Atrue%2C%22loadElectTurnResult%22%3Atrue%2C%22loadStudentLessonTask%22%3Atrue%2C%22loadPrerequisiteCourse%22%3Atrue%2C%22lessonCalendarWeek%22%3Afalse%2C%22loadLessonCalendarConflict%22%3Afalse%2C%22loadTermCredit%22%3Atrue%2C%22loadLessonTask%22%3Atrue%2C%22loadDropApprove%22%3Atrue%2C%22loadElectApprove%22%3Atrue%7D', headers=self.headers, cookies=self.cookies).text)
+        response = json.loads(requests.get(
+            f'https://coursesel.umji.sjtu.edu.cn/tpm/findLessonTasks_ElectTurn.action?jsonString=%7B%22isToTheTime%22%3A{self.enable_istothetime}%2C%22electTurnId%22%3A%22{electurnid}%22%2C%22loadCourseGroup%22%3Atrue%2C%22loadElectTurn%22%3Atrue%2C%22loadCourseType%22%3Atrue%2C%22loadCourseTypeCredit%22%3Atrue%2C%22loadElectTurnResult%22%3Atrue%2C%22loadStudentLessonTask%22%3Atrue%2C%22loadPrerequisiteCourse%22%3Atrue%2C%22lessonCalendarWeek%22%3Afalse%2C%22loadLessonCalendarConflict%22%3Afalse%2C%22loadTermCredit%22%3Atrue%2C%22loadLessonTask%22%3Atrue%2C%22loadDropApprove%22%3Atrue%2C%22loadElectApprove%22%3Atrue%7D', headers=self.headers, cookies=self.cookies).text)
+
+        all_lessons = []
 
         mdata = response['data']['lessonTasks']
-        table = PrettyTable(['ID', 'Name', 'Teacher', 'Code', 'Registration Satus'])
+        table = PrettyTable(
+            ['ID', 'Name', 'Teacher', 'Code', 'Registration Satus'])
 
         for id, lesson in enumerate(mdata):
             cname = lesson['courseName']
@@ -82,8 +98,10 @@ class JIEelector:
                 teacher = '未知'
             table.add_row([id, f'{detail}/{cname}', teacher,
                           lclasscode, f"{hasstu}/{maxnum}"])
+            all_lessons.append(lesson)
         print(table)
-        selected = input('Please enter the course ID(s) you want to elect, separated by commas:').split(',')
+        selected = input(
+            'Please enter the course ID(s) you want to elect, separated by commas:').split(',')
         table.clear_rows()
 
         if len(selected) == 0:
@@ -118,16 +136,46 @@ class JIEelector:
 
         # Export
 
-        obj = {
-            "jsessionID": self.cookies['JSESSIONID'],
-            "electTurnId": electurnid,
-            "courses": selected_courses
+        obj = {}
+        if os.path.exists("coursesel.json"):
+            with open("coursesel.json", "r") as f:
+                obj = json.load(f)
+
+        obj["electTurnId"] = electurnid
+        obj["courses"] = selected_courses
+        obj["lessons"] = {
+            electurnid: all_lessons
         }
 
-        with open('.coursesel', 'w') as f:
+        with open('coursesel.json', 'w') as f:
             json.dump(obj, f, ensure_ascii=False, indent=4)
-        
-        print('Saved to .coursesel.')
+
+    def save_all_courses(self, electurnid: str):
+        '''
+        Save all courses in a turn
+        '''
+        import requests
+        import os.path
+
+        response = json.loads(requests.get(
+            f'https://coursesel.umji.sjtu.edu.cn/tpm/findLessonTasks_ElectTurn.action?jsonString=%7B%22isToTheTime%22%3A{self.enable_istothetime}%2C%22electTurnId%22%3A%22{electurnid}%22%2C%22loadCourseGroup%22%3Atrue%2C%22loadElectTurn%22%3Atrue%2C%22loadCourseType%22%3Atrue%2C%22loadCourseTypeCredit%22%3Atrue%2C%22loadElectTurnResult%22%3Atrue%2C%22loadStudentLessonTask%22%3Atrue%2C%22loadPrerequisiteCourse%22%3Atrue%2C%22lessonCalendarWeek%22%3Afalse%2C%22loadLessonCalendarConflict%22%3Afalse%2C%22loadTermCredit%22%3Atrue%2C%22loadLessonTask%22%3Atrue%2C%22loadDropApprove%22%3Atrue%2C%22loadElectApprove%22%3Atrue%7D', headers=self.headers, cookies=self.cookies).text)
+
+        all_lessons = []
+
+        mdata = response['data']['lessonTasks']
+
+        obj = {}
+        if os.path.exists("coursesel.json"):
+            with open("coursesel.json", "r") as f:
+                obj = json.load(f)
+
+        obj["electTurnId"] = electurnid
+        obj["lessons"] = {
+            electurnid: all_lessons
+        }
+
+        with open('coursesel.json', 'w') as f:
+            json.dump(obj, f, ensure_ascii=False, indent=4)
 
     def run(self):
         '''
@@ -135,4 +183,14 @@ class JIEelector:
         '''
         turn = self.get_elect_turns()
 
-        self.get_all_courses(turn)
+        if turn:
+            self.get_all_courses(turn)
+
+    def run_save(self):
+        '''
+        Save
+        '''
+        turn = self.get_elect_turns()
+
+        if turn:
+            self.save_all_courses(turn)
