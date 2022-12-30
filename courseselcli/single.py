@@ -47,7 +47,7 @@ class ElectSingle:
             'Accept-Language': 'zh-CN,zh;q=0.9',
         }
         # print(
-        #     f"init: electturnid: {self.ELECTTURNID}, courses: {self.COURSEID}")
+        #     f"init: electturnid: {self.ELECTTURNID}, courses: {self.COURSEID}, trymax: {self.trymax}")
         print(f"using {thread_number} thread(s) for each course")
 
     def sendreq(self, data, taskid):
@@ -77,7 +77,6 @@ class ElectSingle:
                 return
             if(str(ret).find("false") == -1):
                 # print("success, congrats")
-                self.stop = 1
                 self.progress.update(
                     self.tasks[taskid], advance=1, description="[white]" + self.course_desc[taskid] + ": [green]Success")
                 return
