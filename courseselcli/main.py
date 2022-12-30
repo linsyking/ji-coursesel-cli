@@ -133,7 +133,7 @@ def elect(jsessionID: str = typer.Option(None, "--jsessionID", "-j", help="Your 
           electTurnID: str = typer.Option(None, "--electTurnID", "-e"),
           ElectTurnLessonTaskID: str = typer.Option(None, "--electTurnLessonTaskID", "-l",
                                                     help="List of all courses you want to select, separated by comma (,)."),
-          thread_number: int = typer.Option(10, "--thread", "-x",
+          thread_number: int = typer.Option(3, "--thread", "-x",
                                             help="Number of threads to use for each course."),
           max_try: int = typer.Option(None, "--max-try", "-m",
                                       help="Maximum number of requests to send for each course. If not set, will try forever.")

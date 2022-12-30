@@ -5,7 +5,7 @@ import threading
 
 
 class ElectSingle:
-    def __init__(self, JSESSIONID, TURNID, COURSEID: list, thread_number=10, max_try=None) -> None:
+    def __init__(self, JSESSIONID, TURNID, COURSEID: list, thread_number=3, max_try=None) -> None:
         '''
         COURSEID: list of the ElectTurnLessonTaskID of courses
         thread_number: thred number for each course

@@ -36,7 +36,7 @@ Elect:
 ji-coursesel elect
 ```
 
-Specify the threads number for each course (recommend to use 1 when testing):
+Specify the threads number for each course (recommended to use 1 when testing):
 
 ```bash
 ji-coursesel elect -x 1
