@@ -1,6 +1,6 @@
 # JI-Coursesel CLI
 
-[![asciicast](https://asciinema.org/a/0M3EJMGSq8Qrc4M7izJjrPfhZ.svg)](https://asciinema.org/a/0M3EJMGSq8Qrc4M7izJjrPfhZ)
+[![asciicast](https://asciinema.org/a/548667.svg)](https://asciinema.org/a/548667)
 
 ## Pre-requirements
 

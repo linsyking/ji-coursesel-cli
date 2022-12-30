@@ -133,10 +133,14 @@ def elect(jsessionID: str = typer.Option(None, "--jsessionID", "-j", help="Your 
           electTurnID: str = typer.Option(None, "--electTurnID", "-e"),
           ElectTurnLessonTaskID: str = typer.Option(None, "--electTurnLessonTaskID", "-l",
                                                     help="List of all courses you want to select, separated by comma (,)."),
+          CoursesDesc: str = typer.Option(None, "--coursesDesc",
+                                          help="List of all course description you want to select, separated by comma (,)."),
           thread_number: int = typer.Option(3, "--thread", "-x",
                                             help="Number of threads to use for each course."),
           max_try: int = typer.Option(None, "--max-try", "-m",
-                                      help="Maximum number of requests to send for each course. If not set, will try forever.")
+                                      help="Maximum number of requests to send for all course. If not set, will try forever."),
+          demo: bool = typer.Option(
+              False, "--demo", help="Do a demonstration.")
           ):
     """
     Elect courses.
@@ -148,11 +152,19 @@ def elect(jsessionID: str = typer.Option(None, "--jsessionID", "-j", help="Your 
             config = json.load(f)
         try:
             jsessionID = config['jsessionID']
-            electTurnID = config['electTurnId']
-            courses_eid = []
-            for l in config['courses']:
-                courses_eid.append(l['electTurnLessonTaskId'])
-            ElectTurnLessonTaskID = ','.join(courses_eid)
+            if demo:
+                electTurnID = "demo"
+                ElectTurnLessonTaskID = "test1,test2,test3,test4,test5"
+                CoursesDesc = "test1,test2,test3,test4,test5"
+            else:
+                electTurnID = config['electTurnId']
+                courses_eid = []
+                courses_code = []
+                for l in config['courses']:
+                    courses_eid.append(l['electTurnLessonTaskId'])
+                    courses_code.append(l['lessonClassCode'])
+                ElectTurnLessonTaskID = ','.join(courses_eid)
+                CoursesDesc = ','.join(courses_code)
         except:
             raise RuntimeError(
                 "Invalid coursesel.json file, please add courses first.")
@@ -169,9 +181,8 @@ def elect(jsessionID: str = typer.Option(None, "--jsessionID", "-j", help="Your 
     from courseselcli.single import ElectSingle
 
     my_elector = ElectSingle(JSESSIONID, electTurnID, ElectTurnLessonTaskID.split(
-        ','), thread_number, max_try)
+        ','), thread_number, max_try, CoursesDesc.split(','))
     my_elector.run()
-
 
 if __name__ == "__main__":
     app()
