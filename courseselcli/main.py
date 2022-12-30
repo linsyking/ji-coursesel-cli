@@ -99,6 +99,8 @@ def autoadd(use_realtime: bool = typer.Option(
     elector = JIEelector(js, use_realtime)
     try:
         elector.run()
+    except KeyboardInterrupt:
+        return
     except:
         get_jsession(True)
         autoadd(use_realtime)
@@ -123,6 +125,8 @@ def search(keyword: str = typer.Argument(..., help="Keyword to search.")):
     elector = JIEelector(js)
     try:
         elector.search_courses(keyword)
+    except KeyboardInterrupt:
+        return
     except:
         get_jsession(True)
         search(keyword)
