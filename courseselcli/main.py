@@ -22,15 +22,26 @@ def get_jsession(force_update=False):
             return obj["jsessionID"]
     import courseselcli.coursesel as coursesel
     import asyncio
+
+    username = None
+    password = None
+    if "username" in obj:
+        username = obj["username"]
+
+    if "password" in obj:
+        password = obj["password"]
+
     print("Getting your JSESSIONID...")
     try:
-        res = asyncio.run(coursesel.get_coursesel_jsid(True))
+        res = asyncio.run(coursesel.get_coursesel_jsid(
+            True, username, password))
     except Exception:
         raise RuntimeError("Failed to get JSESSIONID")
     obj["jsessionID"] = res
     with open("coursesel.json", "w") as f:
         f.write(json.dumps(obj, indent=4, ensure_ascii=False))
     return res
+
 
 def get_conf():
     import os.path
@@ -40,23 +51,42 @@ def get_conf():
             obj = json.load(f)
         return obj
     else:
-        get_jsession()
-        return get_conf()
+        raise RuntimeError(
+            "Configuration file not found, please first run `auth` command.")
+
 
 @app.command()
-def update(use_realtime: bool = typer.Option(
-        False, "--realtime", "-r", help="Use realtime request instead of preview request.")):
+def auth(save_username: bool = typer.Option(True, prompt=True),
+         save_password: bool = typer.Option(True, prompt=True),
+         username: str = typer.Option(..., prompt=True),
+         password: str = typer.Option(..., prompt=True, hide_input=True)
+         ):
     """
-    Update courses from server.
+    Auth username and password.
     """
-    js = get_jsession()
-    from courseselcli.elector import JIEelector
-    elector = JIEelector(js, use_realtime)
+    import os.path
+
+    import courseselcli.coursesel as coursesel
+    import asyncio
+    obj = {}
+    if os.path.exists("coursesel.json"):
+        with open("coursesel.json", "r") as f:
+            obj = json.load(f)
+    if save_username:
+        obj["username"] = username
+    if save_password:
+        obj["password"] = password
     try:
-        elector.run_save()
-    except:
-        get_jsession(True)
-        update(use_realtime)
+        res = asyncio.run(coursesel.get_coursesel_jsid(
+            True, username, password))
+    except Exception:
+        raise RuntimeError("Failed to get JSESSIONID")
+    obj["jsessionID"] = res
+
+    with open("coursesel.json", "w") as f:
+        f.write(json.dumps(obj, indent=4, ensure_ascii=False))
+    return res
+
 
 @app.command()
 def autoadd(use_realtime: bool = typer.Option(
@@ -73,10 +103,20 @@ def autoadd(use_realtime: bool = typer.Option(
         get_jsession(True)
         autoadd(use_realtime)
 
+
+@app.command()
+def refresh():
+    """
+    Refresh JSESSIONID in current configuration file.
+    """
+    get_jsession(True)
+    print("Done.")
+
+
 @app.command()
 def search(keyword: str = typer.Argument(..., help="Keyword to search.")):
     """
-    Pull electurns and courses from server.
+    Search courses.
     """
     from courseselcli.elector import JIEelector
     js = get_jsession()
@@ -86,6 +126,7 @@ def search(keyword: str = typer.Argument(..., help="Keyword to search.")):
     except:
         get_jsession(True)
         search(keyword)
+
 
 @app.command()
 def elect(jsessionID: str = typer.Option(None, "--jsessionID", "-j", help="Your JSESSIONID"),
@@ -113,7 +154,8 @@ def elect(jsessionID: str = typer.Option(None, "--jsessionID", "-j", help="Your 
                 courses_eid.append(l['electTurnLessonTaskId'])
             ElectTurnLessonTaskID = ','.join(courses_eid)
         except:
-            raise RuntimeError("Invalid coursesel.json file, please update first.")
+            raise RuntimeError(
+                "Invalid coursesel.json file, please add courses first.")
     if jsessionID is None:
         print("Please specify JSESSIONID")
         return

@@ -21,7 +21,7 @@ ji-coursesel
 Initialize:
 
 ```bash
-ji-coursesel init
+ji-coursesel auth
 ```
 
 Refresh JSESSIONID:

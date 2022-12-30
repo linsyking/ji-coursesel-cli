@@ -1,4 +1,7 @@
 from courseselcli.main import app
 
 def main():
-    app()
+    try:
+        app()
+    except Exception as e:
+        print(e)

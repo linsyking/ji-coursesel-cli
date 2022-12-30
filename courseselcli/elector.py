@@ -46,6 +46,7 @@ class JIEelector:
         Get elect turns
         '''
         import requests
+        from prettytable import PrettyTable
         response = requests.get('https://coursesel.umji.sjtu.edu.cn/tpm/findStudentElectTurns_ElectTurn.action',
                                 headers=self.headers, cookies=self.cookies)
         all_turns = json.loads(response.text)
@@ -53,10 +54,15 @@ class JIEelector:
         if len(all_turns) == 0:
             print('No elect turn found.')
             return None
-        turn = all_turns[0]
-        print(
-            f"ElectTurn: {turn['electTurnName']}, Mode: {turn['electModeName']}, Start Time: {turn['beginTime']}")
-        return turn["electTurnId"]
+        table = PrettyTable(
+            ['ID', 'Name', 'Mode', 'Start Time']
+        )
+        for id, turn in enumerate(all_turns):
+            table.add_row([id, turn['electTurnName'],
+                          turn['electModeName'], turn['beginTime']])
+        print(table)
+        selected = int(input("Please choose one turn. (enter the ID)"))
+        return all_turns[selected]
 
     def search_courses(self, keyword: str):
         import requests
@@ -160,9 +166,7 @@ class JIEelector:
         response = json.loads(requests.get(
             f'https://coursesel.umji.sjtu.edu.cn/tpm/findLessonTasks_ElectTurn.action?jsonString=%7B%22isToTheTime%22%3A{self.enable_istothetime}%2C%22electTurnId%22%3A%22{electurnid}%22%2C%22loadCourseGroup%22%3Atrue%2C%22loadElectTurn%22%3Atrue%2C%22loadCourseType%22%3Atrue%2C%22loadCourseTypeCredit%22%3Atrue%2C%22loadElectTurnResult%22%3Atrue%2C%22loadStudentLessonTask%22%3Atrue%2C%22loadPrerequisiteCourse%22%3Atrue%2C%22lessonCalendarWeek%22%3Afalse%2C%22loadLessonCalendarConflict%22%3Afalse%2C%22loadTermCredit%22%3Atrue%2C%22loadLessonTask%22%3Atrue%2C%22loadDropApprove%22%3Atrue%2C%22loadElectApprove%22%3Atrue%7D', headers=self.headers, cookies=self.cookies).text)
 
-        all_lessons = []
-
-        mdata = response['data']['lessonTasks']
+        all_lessons = response['data']['lessonTasks']
 
         obj = {}
         if os.path.exists("coursesel.json"):

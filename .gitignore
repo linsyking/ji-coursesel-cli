@@ -2,3 +2,4 @@
 *__pycache__
 *coursesel.json
 *.egg-info
+dist/
