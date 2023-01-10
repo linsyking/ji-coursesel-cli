@@ -107,6 +107,21 @@ def autoadd(use_realtime: bool = typer.Option(
 
 
 @app.command()
+def list():
+    '''
+    List my courses
+    '''
+    myconf = get_conf()
+    js = get_jsession()
+    from courseselcli.elector import JIEelector
+    elector = JIEelector(js, True)
+    if "electTurnId" not in myconf:
+        print("Please first add courses")
+        return
+    elector.list_my_courses(myconf["electTurnId"])
+
+
+@app.command()
 def refresh():
     """
     Refresh JSESSIONID in current configuration file.
@@ -187,6 +202,7 @@ def elect(jsessionID: str = typer.Option(None, "--jsessionID", "-j", help="Your 
     my_elector = ElectSingle(JSESSIONID, electTurnID, ElectTurnLessonTaskID.split(
         ','), thread_number, max_try, CoursesDesc.split(','))
     my_elector.run()
+
 
 if __name__ == "__main__":
     app()

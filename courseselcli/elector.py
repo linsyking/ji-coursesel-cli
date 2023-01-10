@@ -159,6 +159,32 @@ class JIEelector:
         with open('coursesel.json', 'w') as f:
             json.dump(obj, f, ensure_ascii=False, indent=4)
 
+    def list_my_courses(self, electturnid: str):
+        '''
+        List all my courses
+        '''
+        from prettytable import PrettyTable
+        import requests
+
+        response = json.loads(requests.get(
+            f'https://coursesel.umji.sjtu.edu.cn/tpm/findLessonTasks_ElectTurn.action?jsonString=%7B%22isToTheTime%22%3Atrue%2C%22electTurnId%22%3A%22{electturnid}%22%2C%22loadCourseGroup%22%3Atrue%2C%22loadElectTurn%22%3Atrue%2C%22loadCourseType%22%3Atrue%2C%22loadCourseTypeCredit%22%3Atrue%2C%22loadElectTurnResult%22%3Atrue%2C%22loadStudentLessonTask%22%3Atrue%2C%22loadPrerequisiteCourse%22%3Atrue%2C%22lessonCalendarWeek%22%3Afalse%2C%22loadLessonCalendarConflict%22%3Afalse%2C%22loadTermCredit%22%3Atrue%2C%22loadLessonTask%22%3Atrue%2C%22loadDropApprove%22%3Atrue%2C%22loadElectApprove%22%3Atrue%7D', headers=self.headers, cookies=self.cookies).text)
+
+        all_lessons = []
+
+        mdata = response['data']['electTurnResult']
+        table = PrettyTable(
+            ['Name', 'Code', 'Approver', 'Submit Time'])
+
+        for lesson in mdata:
+            lclasscode = lesson['lessonClassCode']
+            name = lesson['lessonClassName']
+            app = lesson['approverName']
+            subtime = lesson['submitTime']
+
+            table.add_row([name[:50], lclasscode, app, subtime])
+            all_lessons.append(lesson)
+        print(table)
+
     def save_all_courses(self, electturnid: str):
         '''
         Save all courses in a turn
