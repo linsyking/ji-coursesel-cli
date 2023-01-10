@@ -171,17 +171,27 @@ class JIEelector:
 
         all_lessons = []
 
-        mdata = response['data']['electTurnResult']
+        studentl = response['data']['studentLessonTask']
+        mdata = response['data']['lessonTasks']
         table = PrettyTable(
-            ['Name', 'Code', 'Approver', 'Submit Time'])
+            ['ID', 'Name', 'Teacher', 'Code', 'Registration Satus'])
 
-        for lesson in mdata:
+        for id, lesson in enumerate(mdata):
+            if lesson['lessonTaskId'] not in studentl:
+                continue
+            cname = lesson['courseName']
             lclasscode = lesson['lessonClassCode']
-            name = lesson['lessonClassName']
-            app = lesson['approverName']
-            subtime = lesson['submitTime']
+            maxnum = lesson['maxNum']
+            detail = lesson['lessonClassName']
+            hasstu = lesson['studiedStudentNum']
+            if 'lessonTaskTeam' in lesson:
+                teacher = lesson['lessonTaskTeam']
+            else:
+                teacher = 'Unknown'
 
-            table.add_row([name[:50], lclasscode, app, subtime])
+            name = f'{detail}/{cname}'
+            table.add_row([id, name[:50], teacher,
+                          lclasscode, f"{hasstu}/{maxnum}"])
             all_lessons.append(lesson)
         print(table)
 
